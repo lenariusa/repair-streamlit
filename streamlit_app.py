@@ -6,117 +6,116 @@ import pandas as pd
 # --- Настройка страницы ---
 st.set_page_config(
     layout="wide", 
-    page_title="SonoScape Future - Управление ремонтами", 
+    page_title="SonoScape - Управление ремонтами", 
     page_icon="🔧",
     initial_sidebar_state="expanded"
 )
 
-# --- Кастомные стили в стиле SonoScape Future ---
-def set_background(image_url):
-    st.markdown(
-        f"""
-        <style>
-        .stApp {{
-            background-image: url("{image_url}");
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-        }}
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
-
-# Футуристичный фон
-set_background("https://images.unsplash.com/photo-1620712943543-bcc4688e7485?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1920&q=80")
-
+# --- Кастомные стили в стиле SonoScape ---
 st.markdown("""
 <style>
 /* Основные стили */
-[data-testid="stAppViewContainer"], .main, .block-container {
-    background-color: rgba(0, 20, 40, 0.85) !important;
-    color: #ffffff !important;
-    border-radius: 15px;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(0, 150, 255, 0.3);
-    box-shadow: 0 8px 32px rgba(0, 80, 150, 0.3);
+[data-testid="stAppViewContainer"] {
+    background-color: #f8f9fa;
+}
+
+/* Контейнеры контента */
+.main, .block-container, [data-testid="stHorizontalBlock"] {
+    background-color: white;
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
 }
 
 /* Заголовки */
-h1, h2, h3, h4, h5, h6 {
-    color: #00a0ff !important;
-    font-weight: 600 !important;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+h1, h2, h3 {
+    color: #005b9f;
+    font-family: 'Arial', sans-serif;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+h1 {
+    font-size: 28px;
+    border-bottom: 2px solid #e0e0e0;
+    padding-bottom: 0.5rem;
 }
 
 /* Текст */
 [class*="css"], p, div {
-    color: #e0f0ff !important;
+    font-family: 'Arial', sans-serif;
+    color: #333333;
+    font-size: 15px;
 }
 
 /* Поля ввода */
-.stTextInput>div>div>input, .stSelectbox>div>div>select {
-    background-color: rgba(0, 40, 80, 0.7) !important;
-    color: white !important;
-    border: 1px solid #007acc !important;
-    border-radius: 8px !important;
+.stTextInput>div>div>input {
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    padding: 8px 12px;
 }
 
 /* Кнопки */
 .stButton>button {
-    background-color: #007acc !important;
-    color: white !important;
-    border-radius: 8px !important;
-    border: none !important;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    transition: all 0.3s ease;
+    background-color: #005b9f;
+    color: white;
+    border-radius: 4px;
+    border: none;
+    padding: 8px 16px;
+    font-weight: 500;
 }
 
 .stButton>button:hover {
-    background-color: #00a0ff !important;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 120, 255, 0.3);
+    background-color: #004885;
+    color: white;
 }
 
 /* Таблицы */
 .ag-theme-streamlit {
-    --ag-background-color: rgba(0, 30, 60, 0.7) !important;
-    --ag-foreground-color: #e0f0ff !important;
-    --ag-border-color: rgba(0, 150, 255, 0.3) !important;
-}
-
-/* Инфо-блоки */
-.stAlert {
-    background-color: rgba(0, 80, 160, 0.5) !important;
-    border-left: 5px solid #00a0ff !important;
-}
-
-/* Фильтры вверху */
-.filter-container {
-    background-color: rgba(0, 40, 80, 0.5) !important;
-    padding: 1rem;
-    border-radius: 10px;
-    margin-bottom: 1.5rem;
-    border: 1px solid rgba(0, 150, 255, 0.2);
-}
-
-/* Сайдбар */
-[data-testid="stSidebar"] {
-    background-color: rgba(0, 20, 40, 0.9) !important;
-    border-right: 1px solid rgba(0, 150, 255, 0.2) !important;
-}
-
-/* Хедер */
-[data-testid="stHeader"] {
-    background-color: rgba(0, 0, 0, 0.3) !important;
+    --ag-background-color: white;
+    --ag-foreground-color: #333333;
+    --ag-border-color: #e0e0e0;
+    --ag-header-background-color: #f1f1f1;
 }
 
 /* Карточки статистики */
 .stMetric {
-    background-color: rgba(0, 60, 120, 0.4) !important;
-    border-radius: 10px;
-    padding: 10px;
-    border-left: 4px solid #00a0ff !important;
+    background-color: white;
+    border-left: 4px solid #005b9f;
+    padding: 15px;
+    border-radius: 4px;
+}
+
+.stMetricLabel {
+    font-weight: 600;
+    color: #005b9f;
+}
+
+.stMetricValue {
+    font-size: 24px;
+    font-weight: 700;
+}
+
+/* Фильтры */
+.filter-container {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    border: 1px solid #e0e0e0;
+}
+
+/* Сайдбар */
+[data-testid="stSidebar"] {
+    background-color: white;
+    border-right: 1px solid #e0e0e0;
+}
+
+/* Хедер */
+[data-testid="stHeader"] {
+    background-color: white;
+    border-bottom: 1px solid #e0e0e0;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -137,12 +136,18 @@ def load_data():
 
 # --- Основной код ---
 def main():
-    # Логотип и заголовок
+    # Заголовок с логотипом
     col1, col2 = st.columns([1, 4])
     with col1:
-        st.image("https://via.placeholder.com/150x50/007ACC/FFFFFF?text=SonoScape", width=150)
+        st.image("https://www.sonoscape.com.cn/static/images/logo.png", width=150)
     with col2:
-        st.title("Управление ремонтами оборудования")
+        st.title("Управление ремонтами медицинского оборудования")
+        st.markdown("""
+        <div style="color: #666666; margin-top: -15px; margin-bottom: 20px;">
+        С момента своего основания в 2002 году компания SonoScape занимается созданием новых технологий 
+        и разработкой медицинского оборудования.
+        </div>
+        """, unsafe_allow_html=True)
 
     # Фильтры вверху страницы
     with st.container():
@@ -177,14 +182,11 @@ def main():
         theme="streamlit",
         fit_columns_on_grid_load=True,
         height=min(800, 35 * len(df) if len(df) > 0 else 400),
-        key="main_table",
-        custom_css={
-            ".ag-header-cell-label": {"color": "#00a0ff"},
-            ".ag-row-hover": {"background-color": "rgba(0, 160, 255, 0.1) !important"}
-        }
+        key="main_table"
     )
 
     # Статистика
+    st.markdown("### Статистика ремонтов")
     col1, col2, col3 = st.columns(3)
     with col1:
         st.metric("Всего записей", len(df))
