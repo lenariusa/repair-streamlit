@@ -3,7 +3,7 @@ from supabase import create_client, Client
 from st_aggrid import AgGrid, GridOptionsBuilder
 import pandas as pd
 
-# Растянуть страницу на всю ширину
+# Настройка страницы
 st.set_page_config(layout="wide")
 
 # Подключение к Supabase
@@ -15,87 +15,41 @@ def init_connection():
 
 supabase = init_connection()
 
-# Получение данных с кэшированием
+# Получение только данных о ремонтах
 @st.cache_data(ttl=600)
-def load_data():
-    repairs = supabase.table("repairs").select("*").execute().data
-    users = supabase.table("users").select("id, full_name").execute().data
-    return pd.DataFrame(repairs), pd.DataFrame(users)
+def load_repairs():
+    return pd.DataFrame(supabase.table("repairs").select("*").execute().data)
 
-df_repairs, df_users = load_data()
+df = load_repairs()
 
-# Отладочный вывод
-st.subheader("🔧 Исходные данные ремонтов:")
-st.write(df_repairs.head(3))
+# Удаляем ненужные столбцы
+columns_to_drop = ['id', 'user_id']
+df = df.drop(columns=[col for col in columns_to_drop if col in df.columns])
 
-st.subheader("👤 Исходные данные пользователей:")
-st.write(df_users.head(3))
-
-# Преобразование типов
-df_repairs["user_id"] = df_repairs["user_id"].astype(str)
-df_users["id"] = df_users["id"].astype(str)
-
-# Объединение таблиц с явным удалением столбцов
-if not df_repairs.empty and not df_users.empty:
-    # Создаём копию перед merge
-    df_merged = df_repairs.copy()
-    
-    # Выполняем merge
-    df_merged = df_merged.merge(
-        df_users, 
-        left_on="user_id", 
-        right_on="id", 
-        how="left",
-        suffixes=('', '_user')
-    )
-    
-    # Удаляем ВСЕ технические столбцы
-    cols_to_drop = ['id', 'user_id', 'id_user']
-    df_merged = df_merged.drop(columns=[c for c in cols_to_drop if c in df_merged.columns])
-    
-    # Переименовываем
-    df_merged = df_merged.rename(columns={"full_name": "ФИО"})
-else:
-    df_merged = df_repairs.copy()
-    df_merged = df_merged.drop(columns=['id', 'user_id'], errors='ignore')
-
-# Явно задаём порядок столбцов (без id и user_id)
-desired_columns = [col for col in df_merged.columns if col not in ['id', 'user_id']]
-df_merged = df_merged[desired_columns]
-
-# Отладочный вывод
-st.subheader("🔄 Результат после обработки:")
-st.write(df_merged.head(3))
-
-# Настройка AgGrid
-gb = GridOptionsBuilder.from_dataframe(df_merged)
+# Настройка AgGrid с явным скрытием столбцов
+gb = GridOptionsBuilder.from_dataframe(df)
 gb.configure_pagination(paginationAutoPageSize=True)
 gb.configure_default_column(
     groupable=True,
     value=True,
     enableRowGroup=True,
-    editable=False,
-    suppressSizeToFit=True
+    editable=False
 )
 
-# Явно скрываем технические столбцы
-if 'id' in df_merged.columns:
-    gb.configure_column('id', hide=True)
-if 'user_id' in df_merged.columns:
-    gb.configure_column('user_id', hide=True)
+# Явно скрываем столбцы, если они вдруг остались
+for col in columns_to_drop:
+    if col in df.columns:
+        gb.configure_column(col, hide=True)
 
-gb.configure_side_bar()
-gb.configure_selection("single")
 grid_options = gb.build()
 
 # Вывод таблицы
-st.title("📋 Итоговая таблица ремонтов")
+st.title("📋 Таблица ремонтов")
 AgGrid(
-    df_merged,
+    df,
     gridOptions=grid_options,
     fit_columns_on_grid_load=True,
     theme="streamlit",
     height=600,
-    reload_data=True,
-    key='repairs_grid'
+    reload_data=True
 )
