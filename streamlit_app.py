@@ -11,52 +11,112 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- Встроенные логотипы в base64 ---
-def get_logo_base64(logo_type="main"):
-    logos = {
-        "main": "iVBORw0KGgoAAAANSUhEUgAAAMgAAAAyCAYAAAAZUZThAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAFkSURBVHgB7dixbcMwEAXQs0T6D5zBg7t0SJXKQ7p08OQhXTp48pAqGQJkCGDgA7IsiZQoUqQo8T0gkEiCxAcQlETyAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADwP9q2XQ3DcNq27XQcx9U4jqt5nlfjOK7meV7N87yapmk1TdNqHMfVMAyrvu9Xfd+vuq5bdV236rpu1bbtqm3bVdM0q6ZpVnVdr6qqWlVVtSrLclUUxaqiKFZ5nq+yLFtlabrK0nSVpukqSZJVEserOI5XURS9xXG8iqLoLYqiVRiGqzAMV2EYrsIwXIVhuArDcBUEwSoIglUQBKsgCFZBEKyCIFgFQbAKgmAVBMEqCIJVEASrIAhWQRCsgiBYBUGwCoJgFQTBKgiCVRAEqyAIVkEQrIIgWAVBsAqCYBUEwSoIglUQBKsgCFZBEKyCIFgFQbAKgmAVBMEqCIJVEASrIAhWQRCsgiBYBUGwCoJgFQTBKgiCVRAEqyAIVkEQrIIgWAVBsAqCYBUEwSoIglUQBKsgCFZBEKyCIFgFQbAKgmAVBMEqCIJVEASrIAhWQRCsgiBYBUGwCoJgFQTBKgiCVRAEqyAIVkEQrP4A0eYp9VjT0XQAAAAASUVORK5CYII=",
-        "header": "iVBORw0KGgoAAAANSUhEUgAAAJYAAAAyCAYAAAC+jCIaAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAIiSURBVHgB7doxTsMwFAXQs8T9D5zBg7t0SJXKQ7p08OQhXTp48pAqGQJkCGDgA7IsiZQoUqQo8T0gkEiCxAcQlETyAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADwP9q2XQ3DcNq27XQcx9U4jqt5nlfjOK7meV7N87yapmk1TdNqHMfVMAyrvu9Xfd+vuq5bdV236rpu1bbtqm3bVdM0q6ZpVnVdr6qqWlVVtSrLclUUxaqiKFZ5nq+yLFtlabrK0nSVpukqSZJVEcerOI5XURS9xXG8iqLoLYqiVRiGqzAMV2EYrsIwXIVhuArDcBWE4SoIw1UQhqsgDFdBGK6CMFwFYbgKwnAVhOEqCMNVEIarIAxXQRiugjBcBWG4CsJwFYThKgjDVRCGqyAMV0EYroIwXAVhuArCcBWE4SoIw1UQhqsgDFdBGK6CMFwFYbgKwnAVhOEqCMNVEIarIAxXQRiugjBcBWG4CsJwFYThKgjDVRCGqyAMV0EYroIwXAVhuArCcBWE4SoIw1UQhqsgDFdBGK6CMFwFYbgKwnAVhOEqCMNVEIarIAxXQRiugjBcBWG4CsJwFYThKgjDVRCGqyAMV0EYroIwXAVhuArCcBWE4SoIw1UQhqsgDFdBGK6CMFwFYbgKwnAVhOEqCMNVEIarIAxXQRiugjBcBWG4CsJwFYThKgjDVRCGqyAMV0EYroIwXAVhuArCcBWE4SoIw1UQhqsgDFdBGK6CMFwFYbgKwnAVhOEqCMNVEIarIAxXQRiugjBcBWG4CsJwFYThKgjDVRCGqyAMV0EYroIwXAVhuArCcBWE4SoIw1UQhqsgDFdBGK6CMFwFYbgKwnAVhOEqCMNVEIarIAxXQRiugjBcBWG4CsJwFYThKgjDVRCGqyAMV0EYroIwXAVhuArCcBWE4SoIw1UQhqsgDFdBGK6CMFwFYbgKwnAVhOEqCMNVEIarIAxXQRiugjBcBWG4CsJwFYThKgjDVRCGqyAMV0EYroIwXAVhuArCcBWE4SoIw1UQhqsgDFdBGK6CMFwFYbgKwnAVhOEqCMNVEIarIAxXQRiugjBcBWG4CsJwFYThKgjDVRCGqyAMV0EYroIwXAVhuArCcBWE4SoIw1UQhqsgDFdBGK6CMFwFYbgKwnAVhOEqiP8BfQHlY2yqQZQAAAAASUVORK5CYII="
-    }
-    return logos.get(logo_type, "")
-
-# --- Кастомные стили ---
-st.markdown(f"""
+# --- Кастомные стили в стиле SonoScape ---
+st.markdown("""
 <style>
 /* Основные стили */
-[data-testid="stAppViewContainer"] {{
+[data-testid="stAppViewContainer"] {
     background-color: #f8f9fa;
-}}
-
-/* Логотип в заголовке */
-.header-logo {{
-    height: 50px;
-    margin-right: 15px;
-}}
+}
 
 /* Контейнеры контента */
-.main, .block-container, [data-testid="stHorizontalBlock"] {{
+.main, .block-container, [data-testid="stHorizontalBlock"] {
     background-color: white;
     border-radius: 8px;
     padding: 2rem;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     margin-bottom: 2rem;
-}}
+}
 
 /* Заголовки */
-h1, h2, h3 {{
+h1, h2, h3 {
     color: #005b9f;
     font-family: 'Arial', sans-serif;
     font-weight: 600;
     margin-bottom: 1rem;
-}}
+}
 
-h1 {{
+h1 {
     font-size: 28px;
     border-bottom: 2px solid #e0e0e0;
     padding-bottom: 0.5rem;
-}}
+}
 
-/* Остальные стили остаются как в предыдущем варианте */
+/* Текст */
+[class*="css"], p, div {
+    font-family: 'Arial', sans-serif;
+    color: #333333;
+    font-size: 15px;
+}
+
+/* Поля ввода */
+.stTextInput>div>div>input {
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    padding: 8px 12px;
+}
+
+/* Кнопки */
+.stButton>button {
+    background-color: #005b9f;
+    color: white;
+    border-radius: 4px;
+    border: none;
+    padding: 8px 16px;
+    font-weight: 500;
+}
+
+.stButton>button:hover {
+    background-color: #004885;
+    color: white;
+}
+
+/* Таблицы */
+.ag-theme-streamlit {
+    --ag-background-color: white;
+    --ag-foreground-color: #333333;
+    --ag-border-color: #e0e0e0;
+    --ag-header-background-color: #f1f1f1;
+}
+
+/* Карточки статистики */
+.stMetric {
+    background-color: white;
+    border-left: 4px solid #005b9f;
+    padding: 15px;
+    border-radius: 4px;
+}
+
+.stMetricLabel {
+    font-weight: 600;
+    color: #005b9f;
+}
+
+.stMetricValue {
+    font-size: 24px;
+    font-weight: 700;
+}
+
+/* Фильтры */
+.filter-container {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    border: 1px solid #e0e0e0;
+}
+
+/* Сайдбар */
+[data-testid="stSidebar"] {
+    background-color: white;
+    border-right: 1px solid #e0e0e0;
+}
+
+/* Хедер */
+[data-testid="stHeader"] {
+    background-color: white;
+    border-bottom: 1px solid #e0e0e0;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -75,24 +135,19 @@ def load_data():
     return pd.DataFrame(repairs.data)
 
 # --- Основной код ---
-Def main():
+def main():
     # Заголовок с логотипом
-    logo_base64 = get_logo_base64("main")
-    st.markdown(
-        f"""
-        <div style="display: flex; align-items: center; margin-bottom: 20px;">
-            <img src="data:image/png;base64,{logo_base64}" class="header-logo">
-            <div>
-                <h1 style="margin-bottom: 5px;">Управление ремонтами медицинского оборудования</h1>
-                <p style="color: #666666; margin: 0;">
-                    С момента своего основания в 2002 году компания SonoScape занимается созданием новых технологий 
-                    и разработкой медицинского оборудования.
-                </p>
-            </div>
+    col1, col2 = st.columns([1, 4])
+    with col1:
+        st.image("https://www.sonoscape.com.cn/static/images/logo.png", width=150)
+    with col2:
+        st.title("Управление ремонтами медицинского оборудования")
+        st.markdown("""
+        <div style="color: #666666; margin-top: -15px; margin-bottom: 20px;">
+        С момента своего основания в 2002 году компания SonoScape занимается созданием новых технологий 
+        и разработкой медицинского оборудования.
         </div>
-        """,
-        unsafe_allow_html=True
-    )
+        """, unsafe_allow_html=True)
 
     # Фильтры вверху страницы
     with st.container():
