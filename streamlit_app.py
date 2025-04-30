@@ -10,7 +10,7 @@ st.set_page_config(
     page_icon="🔧"
 )
 
-# --- Инициализация соединения ---
+# --- Подключение к Supabase ---
 @st.cache_resource
 def init_connection():
     url = st.secrets["SUPABASE_URL"]
@@ -24,44 +24,22 @@ def load_data():
     repairs = supabase.table("repairs").select("*").execute()
     return pd.DataFrame(repairs.data)
 
-# --- Основная функция приложения ---
+# --- Основная функция ---
 def main():
+    # Заголовок
+    st.title("📋 Таблица ремонтов SonoScape")
+    
     # Загрузка данных
     df = load_data()
     
     # Удаление ненужных столбцов
-    columns_to_drop = ['id', 'user_id']
-    df = df.drop(columns=[col for col in columns_to_drop if col in df.columns])
+    df = df.drop(columns=['id', 'user_id'], errors='ignore')
     
-    # Заголовок
-    st.title("📋 Таблица ремонтов SonoScape")
+    # Поиск по серийному номеру
+    search_term = st.text_input("🔍 Поиск по серийному номеру:", key="serial_search")
     
-    # Фильтры (уникальные ключи для каждого элемента)
-    with st.expander("🔍 Фильтры", expanded=True):
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            serial_filter = st.text_input("Серийный номер:", key="serial_filter")
-        with col2:
-            status_options = ["Все"] + (list(df['status'].unique()) if 'status' in df.columns else [])
-            status_filter = st.selectbox("Статус:", status_options, key="status_filter")
-        with col3:
-            date_filter = st.date_input("Дата после:", key="date_filter")
-            date_columns = [col for col in df.columns if pd.api.types.is_datetime64_any_dtype(df[col])]
-            date_column = st.selectbox("Столбец даты:", date_columns, key="date_column") if date_columns else None
-    
-    # Применение фильтров
-    if not df.empty:
-        if serial_filter and 'serial1' in df.columns:
-            df = df[df['serial1'].str.contains(serial_filter, case=False, na=False)]
-        
-        if status_filter != "Все" and 'status' in df.columns:
-            df = df[df['status'] == status_filter]
-        
-        if date_filter and date_column:
-            try:
-                df = df[pd.to_datetime(df[date_column]) >= pd.to_datetime(date_filter)]
-            except Exception as e:
-                st.warning(f"Ошибка фильтрации даты: {e}")
+    if search_term and 'serial1' in df.columns:
+        df = df[df['serial1'].str.contains(search_term, case=False, na=False)]
     
     # Настройка таблицы
     gb = GridOptionsBuilder.from_dataframe(df)
@@ -70,14 +48,8 @@ def main():
         groupable=True,
         value=True,
         enableRowGroup=True,
-        editable=False,
-        filterable=True
+        editable=False
     )
-    
-    # Скрытие технических столбцов
-    for col in columns_to_drop:
-        if col in df.columns:
-            gb.configure_column(col, hide=True)
     
     # Отображение таблицы
     AgGrid(
@@ -86,12 +58,11 @@ def main():
         fit_columns_on_grid_load=True,
         theme="streamlit",
         height=600,
-        reload_data=True,
-        key="repairs_table"
+        key="main_table"
     )
     
     # Статус бар
-    st.info(f"Всего записей: {len(df)} | Последнее обновление: {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M')}")
+    st.info(f"Всего записей: {len(df)}")
 
 # Запуск приложения
 if __name__ == "__main__":
