@@ -3,12 +3,28 @@ from supabase import create_client, Client
 from st_aggrid import AgGrid, GridOptionsBuilder
 import pandas as pd
 
-# --- Инициализация страницы (должен быть первым) ---
+# --- Настройка страницы (должен быть первым) ---
 st.set_page_config(
     layout="wide",
     page_title="SonoScape - Управление ремонтами",
     page_icon="🔧"
 )
+
+# --- Стили для прокрутки ---
+st.markdown("""
+<style>
+    .ag-theme-streamlit {
+        height: 70vh !important;
+        overflow-y: auto !important;
+    }
+    .ag-body-viewport {
+        overflow-y: auto !important;
+    }
+    .ag-center-cols-viewport {
+        overflow-y: auto !important;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 # --- Подключение к Supabase ---
 @st.cache_resource
@@ -41,23 +57,35 @@ def main():
     if search_term and 'serial1' in df.columns:
         df = df[df['serial1'].str.contains(search_term, case=False, na=False)]
     
-    # Настройка таблицы
+    # Настройка таблицы с фиксированной высотой
     gb = GridOptionsBuilder.from_dataframe(df)
-    gb.configure_pagination(paginationAutoPageSize=True)
+    gb.configure_pagination(paginationAutoPageSize=False)  # Отключаем встроенную пагинацию
     gb.configure_default_column(
         groupable=True,
         value=True,
         enableRowGroup=True,
-        editable=False
+        editable=False,
+        wrapText=True,
+        autoHeight=True
     )
     
-    # Отображение таблицы
+    # Настройка высоты таблицы
+    grid_options = gb.build()
+    grid_options['alwaysShowVerticalScroll'] = True
+    grid_options['suppressScrollOnNewData'] = True
+    
+    # Отображение таблицы с прокруткой
     AgGrid(
         df,
-        gridOptions=gb.build(),
+        gridOptions=grid_options,
         fit_columns_on_grid_load=True,
         theme="streamlit",
-        height=600,
+        height=600,  # Фиксированная высота контейнера
+        custom_css={
+            ".ag-root-wrapper": {"overflow-y": "auto"},
+            ".ag-body-viewport": {"overflow-y": "auto"},
+            ".ag-center-cols-viewport": {"overflow-y": "auto"}
+        },
         key="main_table"
     )
     
