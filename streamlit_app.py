@@ -10,19 +10,12 @@ st.set_page_config(
     page_icon="🔧"
 )
 
-# --- Стили для непрерывной прокрутки ---
+# --- Стили для таблицы ---
 st.markdown("""
 <style>
     .ag-root-wrapper {
         height: 70vh !important;
         min-height: 400px !important;
-    }
-    .ag-body-viewport-wrapper {
-        overflow-y: auto !important;
-    }
-    .ag-center-cols-viewport {
-        overflow-y: visible !important;
-        height: auto !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -39,48 +32,45 @@ def init_connection():
 def load_data():
     supabase = init_connection()
     repairs = supabase.table("repairs").select("*").execute()
-    return pd.DataFrame(repairs.data)
+    df = pd.DataFrame(repairs.data)
+    return df
 
 def main():
     st.title("📋 Таблица ремонтов SonoScape")
-    
+
     df = load_data()
-    df = df.drop(columns=['id', 'user_id'], errors='ignore')
-    
+
+    # Удаление колонок id и user_id
+    df = df.drop(columns=["id", "user_id"], errors="ignore")
+
+    # Поиск по серийному номеру
     search_term = st.text_input("🔍 Поиск по серийному номеру:", key="serial_search")
     if search_term and 'serial1' in df.columns:
         df = df[df['serial1'].str.contains(search_term, case=False, na=False)]
-    
-    # Настройка таблицы с непрерывной прокруткой
+
+    # Настройка таблицы
     gb = GridOptionsBuilder.from_dataframe(df)
-    gb.configure_pagination(enabled=False)  # Отключаем пагинацию полностью
-    gb.configure_default_column(
-        flex=1,
-        wrapText=True,
-        autoHeight=True
-    )
-    
-    # Дополнительные настройки для непрерывной прокрутки
+    gb.configure_pagination(enabled=False)
+    gb.configure_default_column(flex=1, wrapText=True, autoHeight=True)
+
     grid_options = gb.build()
     grid_options["suppressScrollOnNewData"] = True
     grid_options["alwaysShowVerticalScroll"] = True
     grid_options["domLayout"] = "autoHeight"
-    
-    
+
+    table_height = min(800, 35 * len(df) if len(df) > 0 else 400)
+
     AgGrid(
         df,
         gridOptions=grid_options,
         fit_columns_on_grid_load=True,
         theme="streamlit",
-        height=height,
-        custom_css={
-            ".ag-root-wrapper": {"overflow-y": "auto", "border": "none"},
-            ".ag-body-viewport": {"overflow-y": "auto", "height": "auto"},
-            ".ag-center-cols-viewport": {"overflow-y": "visible"}
-        },
+        height=table_height,
+        allow_unsafe_jscode=True,
+        reload_data=True,
         key="main_table"
     )
-    
+
     st.info(f"Всего записей: {len(df)}")
 
 if __name__ == "__main__":
