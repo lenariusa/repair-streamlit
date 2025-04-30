@@ -98,7 +98,7 @@ col1, col2 = st.columns([1, 6])
 with col1:
     st.image("https://www.sonoscape.com/images/logo.png", width=100)  # Замените на реальный URL логотипа
 with col2:
-    st.markdown("<h1 class='stTitle'>SonoScape - Система учёта ремонтов</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 class='stTitle'>SonoScape</h1>", unsafe_allow_html=True)
 
 # --- Фильтры ---
 with st.expander("🔍 Фильтры", expanded=True):
@@ -109,6 +109,20 @@ with st.expander("🔍 Фильтры", expanded=True):
         status_filter = st.selectbox("Статус:", ["Все"] + list(df['status'].unique()))
     with col3:
         date_filter = st.date_input("Дата после:")
+
+# --- Фильтры ---
+with st.expander("🔍 Фильтры", expanded=True):
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        serial_filter = st.text_input("Серийный номер:")
+    with col2:
+        status_options = ["Все"] + (list(df['status'].unique()) if 'status' in df.columns else [])
+        status_filter = st.selectbox("Статус:", status_options)
+    with col3:
+        date_filter = st.date_input("Дата после:")
+        date_column = st.selectbox("Выберите столбец с датой:", 
+                                 [col for col in df.columns if pd.api.types.is_datetime64_any_dtype(df[col])] 
+                                 if not df.empty else [])
 
 # --- Применение фильтров ---
 if serial_filter:
