@@ -1,19 +1,20 @@
 import streamlit as st
 from supabase import create_client
-from st_aggrid import AgGrid, GridOptionsBuilder
+from st_aggrid import AgGrid, GridOptionsBuilder, JsCode
 import pandas as pd
 
+# Настройка страницы
 st.set_page_config(layout="wide", page_title="SonoScape - Управление ремонтами", page_icon="🔧")
 
-# Стилизация страницы
+# Фон и стили в стиле SonoScape
 st.markdown("""
 <style>
 body {
-    background: linear-gradient(to right, #e8f0f7, #f5f9ff);
+    background: linear-gradient(to right, #e0f2ff, #f7fbff);
     font-family: 'Segoe UI', sans-serif;
 }
 [data-testid="stAppViewContainer"] {
-    background-color: #f4f9ff;
+    background-color: #f7fbff;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -31,6 +32,18 @@ def load_data():
     repairs = supabase.table("repairs").select("*").execute()
     return pd.DataFrame(repairs.data)
 
+# JS функция для покраски строк
+row_style_js = JsCode("""
+function(params) {
+    if (params.data.status === 'Готов') {
+        return { 'backgroundColor': '#d4edda' };  // зелёный
+    } else if (params.data.status === 'В работе') {
+        return { 'backgroundColor': '#fff3cd' };  // жёлтый
+    }
+    return {};
+}
+""")
+
 def main():
     st.title("📋 Таблица ремонтов SonoScape")
 
@@ -41,39 +54,15 @@ def main():
     if search_term and 'serial1' in df.columns:
         df = df[df['serial1'].str.contains(search_term, case=False, na=False)]
 
-    # Добавляем столбец стилей
-    def get_row_style(row):
-        if row.get("status") == "Готов":
-            return {"backgroundColor": "#d4edda"}
-        elif row.get("status") == "В работе":
-            return {"backgroundColor": "#fff3cd"}
-        return {}
-
-    # Применяем стили построчно
-    styled_df = df.copy()
-    styled_df["_style"] = [get_row_style(row) for _, row in df.iterrows()]
-
     # Настройки таблицы
-    gb = GridOptionsBuilder.from_dataframe(styled_df.drop(columns=["_style"]))
-    gb.configure_default_column(wrapText=True, autoHeight=True)
+    gb = GridOptionsBuilder.from_dataframe(df)
+    gb.configure_default_column(wrapText=True, autoHeight=True, resizable=True)
+    gb.configure_grid_options(getRowStyle=row_style_js)
+
     grid_options = gb.build()
 
-    # Добавляем стили
-    grid_options["getRowStyle"] = {
-        "function": """
-        function(params) {
-            if (params.data.status === 'Готов') {
-                return {background: '#d4edda'};
-            } else if (params.data.status === 'В работе') {
-                return {background: '#fff3cd'};
-            }
-            return {};
-        }
-        """
-    }
-
     AgGrid(
-        styled_df.drop(columns=["_style"]),
+        df,
         gridOptions=grid_options,
         theme="streamlit",
         fit_columns_on_grid_load=True,
