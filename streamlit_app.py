@@ -1,16 +1,11 @@
 import streamlit as st
 from supabase import create_client
-from st_aggrid import AgGrid, GridOptionsBuilder, JsCode
+from st_aggrid import AgGrid, GridOptionsBuilder
 import pandas as pd
 
-# Настройка страницы
-st.set_page_config(
-    layout="wide",
-    page_title="SonoScape - Управление ремонтами",
-    page_icon="🔧"
-)
+st.set_page_config(layout="wide", page_title="SonoScape - Управление ремонтами", page_icon="🔧")
 
-# Стили оформления
+# Стилизация страницы
 st.markdown("""
 <style>
 body {
@@ -42,33 +37,46 @@ def main():
     df = load_data()
     df = df.drop(columns=['id', 'user_id'], errors='ignore')
 
-    search_term = st.text_input("🔍 Поиск по серийному номеру:", key="serial_search")
+    search_term = st.text_input("🔍 Поиск по серийному номеру:")
     if search_term and 'serial1' in df.columns:
         df = df[df['serial1'].str.contains(search_term, case=False, na=False)]
 
-    # Настройка отображения с цветами ячеек
-    gb = GridOptionsBuilder.from_dataframe(df)
-    cell_style_jscode = JsCode("""
-    function(params) {
-        if (params.value === 'Готов') {
-            return { 'color': 'white', 'backgroundColor': '#28a745' };
-        } else if (params.value === 'В работе') {
-            return { 'color': 'black', 'backgroundColor': '#ffecb5' };
-        }
-        return {};
-    }
-    """)
-    if 'status' in df.columns:
-        gb.configure_column("status", cellStyle=cell_style_jscode)
+    # Добавляем столбец стилей
+    def get_row_style(row):
+        if row.get("status") == "Готов":
+            return {"backgroundColor": "#d4edda"}
+        elif row.get("status") == "В работе":
+            return {"backgroundColor": "#fff3cd"}
+        return {}
 
+    # Применяем стили построчно
+    styled_df = df.copy()
+    styled_df["_style"] = [get_row_style(row) for _, row in df.iterrows()]
+
+    # Настройки таблицы
+    gb = GridOptionsBuilder.from_dataframe(styled_df.drop(columns=["_style"]))
     gb.configure_default_column(wrapText=True, autoHeight=True)
     grid_options = gb.build()
 
+    # Добавляем стили
+    grid_options["getRowStyle"] = {
+        "function": """
+        function(params) {
+            if (params.data.status === 'Готов') {
+                return {background: '#d4edda'};
+            } else if (params.data.status === 'В работе') {
+                return {background: '#fff3cd'};
+            }
+            return {};
+        }
+        """
+    }
+
     AgGrid(
-        df,
+        styled_df.drop(columns=["_style"]),
         gridOptions=grid_options,
-        fit_columns_on_grid_load=True,
         theme="streamlit",
+        fit_columns_on_grid_load=True,
         height=min(800, 35 * len(df) if len(df) > 0 else 400),
         key="main_table"
     )
