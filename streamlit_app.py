@@ -3,25 +3,26 @@ from supabase import create_client, Client
 from st_aggrid import AgGrid, GridOptionsBuilder
 import pandas as pd
 
-# --- Настройка страницы (должен быть первым) ---
+# --- Настройка страницы ---
 st.set_page_config(
     layout="wide",
     page_title="SonoScape - Управление ремонтами",
     page_icon="🔧"
 )
 
-# --- Стили для прокрутки ---
+# --- Стили для непрерывной прокрутки ---
 st.markdown("""
 <style>
-    .ag-theme-streamlit {
+    .ag-root-wrapper {
         height: 70vh !important;
-        overflow-y: auto !important;
+        min-height: 400px !important;
     }
-    .ag-body-viewport {
+    .ag-body-viewport-wrapper {
         overflow-y: auto !important;
     }
     .ag-center-cols-viewport {
-        overflow-y: auto !important;
+        overflow-y: visible !important;
+        height: auto !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -40,58 +41,49 @@ def load_data():
     repairs = supabase.table("repairs").select("*").execute()
     return pd.DataFrame(repairs.data)
 
-# --- Основная функция ---
 def main():
-    # Заголовок
     st.title("📋 Таблица ремонтов SonoScape")
     
-    # Загрузка данных
     df = load_data()
-    
-    # Удаление ненужных столбцов
     df = df.drop(columns=['id', 'user_id'], errors='ignore')
     
-    # Поиск по серийному номеру
     search_term = st.text_input("🔍 Поиск по серийному номеру:", key="serial_search")
-    
     if search_term and 'serial1' in df.columns:
         df = df[df['serial1'].str.contains(search_term, case=False, na=False)]
     
-    # Настройка таблицы с фиксированной высотой
+    # Настройка таблицы с непрерывной прокруткой
     gb = GridOptionsBuilder.from_dataframe(df)
-    gb.configure_pagination(paginationAutoPageSize=False)  # Отключаем встроенную пагинацию
+    gb.configure_pagination(enabled=False)  # Отключаем пагинацию полностью
     gb.configure_default_column(
-        groupable=True,
-        value=True,
-        enableRowGroup=True,
-        editable=False,
+        flex=1,
         wrapText=True,
         autoHeight=True
     )
     
-    # Настройка высоты таблицы
+    # Дополнительные настройки для непрерывной прокрутки
     grid_options = gb.build()
-    grid_options['alwaysShowVerticalScroll'] = True
-    grid_options['suppressScrollOnNewData'] = True
+    grid_options["suppressScrollOnNewData"] = True
+    grid_options["alwaysShowVerticalScroll"] = True
+    grid_options["domLayout"] = "autoHeight"
     
-    # Отображение таблицы с прокруткой
+    # Высота рассчитывается автоматически на основе количества строк
+    height = min(800, 35 * len(df) if len(df) > 0 else 400
+    
     AgGrid(
         df,
         gridOptions=grid_options,
         fit_columns_on_grid_load=True,
         theme="streamlit",
-        height=600,  # Фиксированная высота контейнера
+        height=height,
         custom_css={
-            ".ag-root-wrapper": {"overflow-y": "auto"},
-            ".ag-body-viewport": {"overflow-y": "auto"},
-            ".ag-center-cols-viewport": {"overflow-y": "auto"}
+            ".ag-root-wrapper": {"overflow-y": "auto", "border": "none"},
+            ".ag-body-viewport": {"overflow-y": "auto", "height": "auto"},
+            ".ag-center-cols-viewport": {"overflow-y": "visible"}
         },
         key="main_table"
     )
     
-    # Статус бар
     st.info(f"Всего записей: {len(df)}")
 
-# Запуск приложения
 if __name__ == "__main__":
     main()
