@@ -1,0 +1,6 @@
+[theme]
+primaryColor = "#1f77b4"  # Синий цвет
+backgroundColor = "#f0f2f6"  # Светлый фон
+secondaryBackgroundColor = "#e6f0f7"  # Более светлый фон
+textColor = "#333333"  # Цвет текста
+font = "sans serif"  # Шрифт
