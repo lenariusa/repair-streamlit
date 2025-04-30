@@ -1,6 +1,7 @@
 import streamlit as st
-from supabase import create_client, Client
+from supabase import create_client
 from st_aggrid import AgGrid, GridOptionsBuilder
+from st_aggrid.shared import JsCode
 import pandas as pd
 
 # --- Настройка страницы ---
@@ -10,18 +11,19 @@ st.set_page_config(
     page_icon="🔧"
 )
 
-# --- Стилизация ---
+# --- Фон и стили в стиле SonoScape ---
 st.markdown("""
 <style>
-    body {
-        background-image: url("https://ru.freepik.com/free-photos-vectors/future-background");
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-attachment: fixed;
-    }
-    .ag-row-ready .ag-row {
-        transition: background-color 0.3s ease;
-    }
+body {
+    background: linear-gradient(to right, #e8f0f7, #f5f9ff);
+    font-family: 'Segoe UI', sans-serif;
+}
+h1, h2, h3, h4 {
+    color: #003f7f;
+}
+[data-testid="stAppViewContainer"] {
+    background-color: #f4f9ff;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -32,63 +34,46 @@ def init_connection():
     key = st.secrets["SUPABASE_KEY"]
     return create_client(url, key)
 
-# --- Загрузка данных ---
 @st.cache_data(ttl=600)
 def load_data():
     supabase = init_connection()
     repairs = supabase.table("repairs").select("*").execute()
-    df = pd.DataFrame(repairs.data)
-    return df
+    return pd.DataFrame(repairs.data)
 
 def main():
     st.title("📋 Таблица ремонтов SonoScape")
 
     df = load_data()
+    df = df.drop(columns=['id', 'user_id'], errors='ignore')
 
-    # Удаление колонок id и user_id
-    df = df.drop(columns=["id", "user_id"], errors="ignore")
-
-    # Поиск по серийному номеру
     search_term = st.text_input("🔍 Поиск по серийному номеру:", key="serial_search")
     if search_term and 'serial1' in df.columns:
         df = df[df['serial1'].str.contains(search_term, case=False, na=False)]
 
-    # Настройка таблицы
-    gb = GridOptionsBuilder.from_dataframe(df)
-    gb.configure_pagination(enabled=False)
-    gb.configure_default_column(flex=1, wrapText=True, autoHeight=True)
-
-    # Условное форматирование строк по статусу
+    # --- JS код для подсветки строк по статусу ---
     cellsytle_jscode = JsCode("""
     function(params) {
         if (params.data.status === 'Готов') {
-            return {
-                'backgroundColor': '#d4edda'
-            }
+            return { 'backgroundColor': '#d4edda' };  // светло-зелёный
         } else if (params.data.status === 'В работе') {
-            return {
-                'backgroundColor': '#fff3cd'
-            }
+            return { 'backgroundColor': '#fff3cd' };  // светло-жёлтый
         }
-    };
+    }
     """)
-    gb.configure_column("status", cellStyle=cellsytle_jscode)
 
+    # --- Настройка таблицы ---
+    gb = GridOptionsBuilder.from_dataframe(df)
+    gb.configure_default_column(wrapText=True, autoHeight=True)
+    gb.configure_grid_options(getRowStyle=cellsytle_jscode)
+    gb.configure_pagination(enabled=False)
     grid_options = gb.build()
-    grid_options["suppressScrollOnNewData"] = True
-    grid_options["alwaysShowVerticalScroll"] = True
-    grid_options["domLayout"] = "autoHeight"
-
-    table_height = min(800, 35 * len(df) if len(df) > 0 else 400)
 
     AgGrid(
         df,
         gridOptions=grid_options,
         fit_columns_on_grid_load=True,
         theme="streamlit",
-        height=table_height,
-        allow_unsafe_jscode=True,
-        reload_data=True,
+        height=min(800, 35 * len(df) if len(df) > 0 else 400),
         key="main_table"
     )
 
