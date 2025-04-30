@@ -66,8 +66,6 @@ def main():
     grid_options["alwaysShowVerticalScroll"] = True
     grid_options["domLayout"] = "autoHeight"
     
-    # Высота рассчитывается автоматически на основе количества строк
-    height = min(800, 35 * len(df) if len(df) > 0 else 400
     
     AgGrid(
         df,
