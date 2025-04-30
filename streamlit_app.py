@@ -1,25 +1,21 @@
 import streamlit as st
 from supabase import create_client
-from st_aggrid import AgGrid, GridOptionsBuilder
-from st_aggrid.shared import JsCode
+from st_aggrid import AgGrid, GridOptionsBuilder, JsCode
 import pandas as pd
 
-# --- Настройка страницы ---
+# Настройка страницы
 st.set_page_config(
     layout="wide",
     page_title="SonoScape - Управление ремонтами",
     page_icon="🔧"
 )
 
-# --- Стили в стиле SonoScape ---
+# Стили оформления
 st.markdown("""
 <style>
 body {
     background: linear-gradient(to right, #e8f0f7, #f5f9ff);
     font-family: 'Segoe UI', sans-serif;
-}
-h1 {
-    color: #003f7f;
 }
 [data-testid="stAppViewContainer"] {
     background-color: #f4f9ff;
@@ -27,7 +23,7 @@ h1 {
 </style>
 """, unsafe_allow_html=True)
 
-# --- Подключение к Supabase ---
+# Подключение к Supabase
 @st.cache_resource
 def init_connection():
     url = st.secrets["SUPABASE_URL"]
@@ -50,24 +46,23 @@ def main():
     if search_term and 'serial1' in df.columns:
         df = df[df['serial1'].str.contains(search_term, case=False, na=False)]
 
-    # Настройка таблицы
+    # Настройка отображения с цветами ячеек
     gb = GridOptionsBuilder.from_dataframe(df)
-    gb.configure_default_column(wrapText=True, autoHeight=True)
-    gb.configure_pagination(enabled=False)
-    grid_options = gb.build()
-
-    # Добавляем JS-код для стилизации строк
-    row_style = JsCode("""
+    cell_style_jscode = JsCode("""
     function(params) {
-        if (params.data.status === 'Готов') {
-            return {'background': '#d4edda'};
-        } else if (params.data.status === 'В работе') {
-            return {'background': '#fff3cd'};
+        if (params.value === 'Готов') {
+            return { 'color': 'white', 'backgroundColor': '#28a745' };
+        } else if (params.value === 'В работе') {
+            return { 'color': 'black', 'backgroundColor': '#ffecb5' };
         }
         return {};
     }
     """)
-    grid_options["getRowStyle"] = row_style
+    if 'status' in df.columns:
+        gb.configure_column("status", cellStyle=cell_style_jscode)
+
+    gb.configure_default_column(wrapText=True, autoHeight=True)
+    grid_options = gb.build()
 
     AgGrid(
         df,
