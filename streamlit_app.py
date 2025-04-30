@@ -3,6 +3,13 @@ from supabase import create_client, Client
 from st_aggrid import AgGrid, GridOptionsBuilder
 import pandas as pd
 
+# --- ДОЛЖЕН БЫТЬ ПЕРВЫМ ВЫЗОВОМ ---
+st.set_page_config(
+    layout="wide",
+    page_title="SonoScape",
+    page_icon="🔧"
+)
+
 # --- Настройка стиля под SonoScape ---
 st.markdown("""
 <style>
@@ -65,13 +72,6 @@ st.markdown("""
     }
 </style>
 """, unsafe_allow_html=True)
-
-# --- Настройка страницы ---
-st.set_page_config(
-    layout="wide",
-    page_title="SonoScape - Управление ремонтами",
-    page_icon="🔧"
-)
 
 # --- Подключение к Supabase ---
 @st.cache_resource
