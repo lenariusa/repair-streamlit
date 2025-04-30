@@ -6,16 +6,48 @@ import pandas as pd
 # --- Настройка страницы ---
 st.set_page_config(layout="wide", page_title="SonoScape - Управление ремонтами", page_icon="🔧")
 
-# --- Стили в стиле SonoScape ---
+# --- Кастомные стили в стиле SonoScape ---
 st.markdown("""
 <style>
-body {
-    background: linear-gradient(to right, #e6f2ff, #f8fcff);
-    font-family: 'Segoe UI', sans-serif;
-}
+/* Фон с изображением */
 [data-testid="stAppViewContainer"] {
-    background-color: #f7fbff;
+    background-image: url("https://images.unsplash.com/photo-1581090700227-1e8e03b0d2fd?auto=format&fit=crop&w=1920&q=80");
+    background-size: cover;
+    background-position: center;
 }
+
+/* Полупрозрачный блок для контента */
+[data-testid="stHeader"], .main, .block-container {
+    background-color: rgba(255, 255, 255, 0.85);
+    border-radius: 10px;
+    padding: 1.5rem;
+    backdrop-filter: blur(6px);
+}
+
+/* Шрифты и стили */
+html, body, [class*="css"] {
+    font-family: 'Segoe UI', sans-serif;
+    color: #003366;
+}
+
+h1 {
+    color: #003366;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+input, .stTextInput > div > div > input {
+    border: 1px solid #cce0ff;
+    border-radius: 8px;
+    padding: 6px 10px;
+    background-color: #f0f7ff;
+}
+
+/* Инфо-блок */
+[data-testid="stMarkdownContainer"] .stAlert {
+    background-color: #e0f0ff;
+    border-left: 5px solid #007acc;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -35,7 +67,7 @@ def load_data():
 
 # --- Основной код ---
 def main():
-    st.title("📋 Таблица ремонтов SonoScape")
+    st.title("🔧 SonoScape — Управление ремонтами")
 
     df = load_data()
     df = df.drop(columns=['id', 'user_id'], errors='ignore')
