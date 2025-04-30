@@ -28,29 +28,24 @@ st.write(df_repairs)
 st.write("👤 Таблица users (пользователи):")
 st.write(df_users)
 
-# Проверка типов данных для user_id и id
-st.write("Тип user_id в таблице repairs:", df_repairs["user_id"].dtype)
-st.write("Тип id в таблице users:", df_users["id"].dtype)
-
-# Приводим типы к строкам (если нужно)
+# Приводим типы к строкам для сравнения
 df_repairs["user_id"] = df_repairs["user_id"].astype(str)
 df_users["id"] = df_users["id"].astype(str)
 
-# Заменим user_id на full_name
+# Объединяем таблицы
 if not df_repairs.empty and not df_users.empty:
-    # Объединяем таблицы по user_id и id
     df_merged = df_repairs.merge(df_users, left_on="user_id", right_on="id", how="left")
     
-    # Убираем лишние столбцы (id и user_id)
-    columns_to_drop = ["id_x", "id_y", "user_id"]
-    df_merged.drop(columns=[col for col in columns_to_drop if col in df_merged.columns], inplace=True)
+    # Удаляем ВСЕ версии id и user_id
+    columns_to_remove = ['id', 'user_id', 'id_x', 'id_y']
+    df_merged = df_merged.drop(columns=[col for col in columns_to_remove if col in df_merged.columns])
     
-    # Переименовываем столбец full_name в ФИО
-    df_merged.rename(columns={"full_name": "ФИО"}, inplace=True)
+    # Переименовываем full_name в ФИО
+    df_merged = df_merged.rename(columns={"full_name": "ФИО"})
 else:
-    df_merged = df_repairs.copy()  # fallback, если нет данных
-    # Удаляем столбцы id и user_id, если они есть
-    df_merged.drop(columns=["id", "user_id"], inplace=True, errors='ignore')
+    df_merged = df_repairs.copy()
+    # Удаляем id и user_id, если они есть
+    df_merged = df_merged.drop(columns=['id', 'user_id'], errors='ignore')
 
 # Заголовок
 st.title("📋 Таблица ремонтов")
@@ -70,7 +65,7 @@ if not df_merged.empty:
     gb.configure_grid_options(domLayout='autoHeight')
     grid_options = gb.build()
 
-    # Вывод таблицы на всю ширину
+    # Вывод таблицы
     AgGrid(
         df_merged,
         gridOptions=grid_options,
