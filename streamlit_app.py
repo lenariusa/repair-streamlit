@@ -75,15 +75,24 @@ def load_data():
     return pd.DataFrame(repairs.data)
 
 # --- Основной код ---
-def main():
+Def main():
     # Заголовок с логотипом
-    col1, col2 = st.columns([1, 4])
-    with col1:
-        st.image("https://www.sonoscape.com.cn/static/images/logo.png", width=150)
-    with col2:
-        st.title("Управление ремонтами")
-        
-        """, unsafe_allow_html=True)
+    logo_base64 = get_logo_base64("main")
+    st.markdown(
+        f"""
+        <div style="display: flex; align-items: center; margin-bottom: 20px;">
+            <img src="data:image/png;base64,{logo_base64}" class="header-logo">
+            <div>
+                <h1 style="margin-bottom: 5px;">Управление ремонтами медицинского оборудования</h1>
+                <p style="color: #666666; margin: 0;">
+                    С момента своего основания в 2002 году компания SonoScape занимается созданием новых технологий 
+                    и разработкой медицинского оборудования.
+                </p>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
     # Фильтры вверху страницы
     with st.container():
