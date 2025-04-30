@@ -11,14 +11,14 @@ st.set_page_config(
     page_icon="🔧"
 )
 
-# --- Фон и стили в стиле SonoScape ---
+# --- Стили в стиле SonoScape ---
 st.markdown("""
 <style>
 body {
     background: linear-gradient(to right, #e8f0f7, #f5f9ff);
     font-family: 'Segoe UI', sans-serif;
 }
-h1, h2, h3, h4 {
+h1 {
     color: #003f7f;
 }
 [data-testid="stAppViewContainer"] {
@@ -50,23 +50,24 @@ def main():
     if search_term and 'serial1' in df.columns:
         df = df[df['serial1'].str.contains(search_term, case=False, na=False)]
 
-    # --- JS код для подсветки строк по статусу ---
-    cellsytle_jscode = JsCode("""
-    function(params) {
-        if (params.data.status === 'Готов') {
-            return { 'backgroundColor': '#d4edda' };  // светло-зелёный
-        } else if (params.data.status === 'В работе') {
-            return { 'backgroundColor': '#fff3cd' };  // светло-жёлтый
-        }
-    }
-    """)
-
-    # --- Настройка таблицы ---
+    # Настройка таблицы
     gb = GridOptionsBuilder.from_dataframe(df)
     gb.configure_default_column(wrapText=True, autoHeight=True)
-    gb.configure_grid_options(getRowStyle=cellsytle_jscode)
     gb.configure_pagination(enabled=False)
     grid_options = gb.build()
+
+    # Добавляем JS-код для стилизации строк
+    row_style = JsCode("""
+    function(params) {
+        if (params.data.status === 'Готов') {
+            return {'background': '#d4edda'};
+        } else if (params.data.status === 'В работе') {
+            return {'background': '#fff3cd'};
+        }
+        return {};
+    }
+    """)
+    grid_options["getRowStyle"] = row_style
 
     AgGrid(
         df,
