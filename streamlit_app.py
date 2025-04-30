@@ -41,8 +41,10 @@ if not df_repairs.empty and not df_users.empty:
     # Объединяем таблицы по user_id и id
     df_merged = df_repairs.merge(df_users, left_on="user_id", right_on="id", how="left")
     
-    # Убираем лишние столбцы
-    df_merged.drop(columns=["id_x", "user_id", "id_y"], inplace=True)
+    # Убираем лишние столбцы, обязательно указываем правильные столбцы
+    df_merged.drop(columns=["user_id", "id_x", "id_y"], inplace=True, errors='ignore')
+    
+    # Переименовываем столбец full_name в ФИО
     df_merged.rename(columns={"full_name": "ФИО"}, inplace=True)
 else:
     df_merged = df_repairs  # fallback, если нет данных
