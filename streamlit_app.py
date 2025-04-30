@@ -19,13 +19,33 @@ users_data = supabase.table("users").select("id, full_name").execute().data
 df_repairs = pd.DataFrame(repairs_data)
 df_users = pd.DataFrame(users_data)
 
+# Выводим диагностику для проверки
+st.subheader("📄 Исходные данные:")
+
+st.write("🔧 Таблица repairs (ремонты):")
+st.write(df_repairs)
+
+st.write("👤 Таблица users (пользователи):")
+st.write(df_users)
+
+# Проверка типов данных для user_id и id
+st.write("Тип user_id в таблице repairs:", df_repairs["user_id"].dtype)
+st.write("Тип id в таблице users:", df_users["id"].dtype)
+
+# Приводим типы к строкам (если нужно)
+df_repairs["user_id"] = df_repairs["user_id"].astype(str)
+df_users["id"] = df_users["id"].astype(str)
+
 # Заменим user_id на full_name
 if not df_repairs.empty and not df_users.empty:
+    # Объединяем таблицы по user_id и id
     df_merged = df_repairs.merge(df_users, left_on="user_id", right_on="id", how="left")
+    
+    # Убираем лишние столбцы
     df_merged.drop(columns=["id_x", "user_id", "id_y"], inplace=True)
     df_merged.rename(columns={"full_name": "ФИО"}, inplace=True)
 else:
-    df_merged = df_repairs
+    df_merged = df_repairs  # fallback, если нет данных
 
 # Заголовок
 st.title("📋 Таблица ремонтов")
@@ -45,7 +65,7 @@ if not df_merged.empty:
     gb.configure_grid_options(domLayout='autoHeight')
     grid_options = gb.build()
 
-    # Вывод таблицы
+    # Вывод таблицы на всю ширину
     AgGrid(
         df_merged,
         gridOptions=grid_options,
