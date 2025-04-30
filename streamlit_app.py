@@ -10,12 +10,17 @@ st.set_page_config(
     page_icon="🔧"
 )
 
-# --- Стили для таблицы ---
+# --- Стилизация ---
 st.markdown("""
 <style>
-    .ag-root-wrapper {
-        height: 70vh !important;
-        min-height: 400px !important;
+    body {
+        background-image: url("https://ru.freepik.com/free-photos-vectors/future-background");
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }
+    .ag-row-ready .ag-row {
+        transition: background-color 0.3s ease;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -52,6 +57,22 @@ def main():
     gb = GridOptionsBuilder.from_dataframe(df)
     gb.configure_pagination(enabled=False)
     gb.configure_default_column(flex=1, wrapText=True, autoHeight=True)
+
+    # Условное форматирование строк по статусу
+    cellsytle_jscode = JsCode("""
+    function(params) {
+        if (params.data.status === 'Готов') {
+            return {
+                'backgroundColor': '#d4edda'
+            }
+        } else if (params.data.status === 'В работе') {
+            return {
+                'backgroundColor': '#fff3cd'
+            }
+        }
+    };
+    """)
+    gb.configure_column("status", cellStyle=cellsytle_jscode)
 
     grid_options = gb.build()
     grid_options["suppressScrollOnNewData"] = True
