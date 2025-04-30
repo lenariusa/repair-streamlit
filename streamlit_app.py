@@ -141,7 +141,7 @@ def main():
     with col1:
         st.image("https://www.sonoscape.com.cn/static/images/logo.png", width=150)
     with col2:
-        st.title("Управление ремонтами медицинского оборудования")
+        st.title("Управление ремонтами")
         st.markdown("""
         <div style="color: #666666; margin-top: -15px; margin-bottom: 20px;">
         </div>
