@@ -44,24 +44,8 @@ def main():
     if search_term and 'serial1' in df.columns:
         df = df[df['serial1'].str.contains(search_term, case=False, na=False)]
 
-    # Добавляем столбец с цветом фона (опционально)
-    def get_status_style(status):
-        if status == "Готов":
-            return {"backgroundColor": "#d4edda"}
-        elif status == "В работе":
-            return {"backgroundColor": "#fff3cd"}
-        return {}
-
     gb = GridOptionsBuilder.from_dataframe(df)
     gb.configure_default_column(wrapText=True, autoHeight=True, resizable=True)
-
-    # Пример: применить стиль к колонке "status"
-    if "status" in df.columns:
-        gb.configure_column(
-            "status",
-            cellStyle=lambda params: get_status_style(params["value"])
-        )
-
     grid_options = gb.build()
 
     AgGrid(
