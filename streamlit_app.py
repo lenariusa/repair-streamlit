@@ -1,6 +1,6 @@
 import streamlit as st
 from supabase import create_client
-from st_aggrid import AgGrid, GridOptionsBuilder, JsCode
+from st_aggrid import AgGrid, GridOptionsBuilder
 import pandas as pd
 
 # --- Настройка страницы ---
@@ -44,23 +44,23 @@ def main():
     if search_term and 'serial1' in df.columns:
         df = df[df['serial1'].str.contains(search_term, case=False, na=False)]
 
-    # JS-код для окраски строк в зависимости от статуса
-    row_style = JsCode("""
-    function(params) {
-        if (params.data.status === 'Готов') {
-            return { 'backgroundColor': '#d4edda' }  // светло-зелёный
-        }
-        if (params.data.status === 'В работе') {
-            return { 'backgroundColor': '#fff3cd' }  // светло-жёлтый
-        }
-        return {};
-    }
-    """)
+    # Добавляем столбец с цветом фона (опционально)
+    def get_status_style(status):
+        if status == "Готов":
+            return {"backgroundColor": "#d4edda"}
+        elif status == "В работе":
+            return {"backgroundColor": "#fff3cd"}
+        return {}
 
-    # Настройка таблицы
     gb = GridOptionsBuilder.from_dataframe(df)
     gb.configure_default_column(wrapText=True, autoHeight=True, resizable=True)
-    gb.configure_grid_options(getRowStyle=row_style)
+
+    # Пример: применить стиль к колонке "status"
+    if "status" in df.columns:
+        gb.configure_column(
+            "status",
+            cellStyle=lambda params: get_status_style(params["value"])
+        )
 
     grid_options = gb.build()
 
