@@ -141,12 +141,8 @@ def main():
     with col1:
         st.image("https://www.sonoscape.com.cn/static/images/logo.png", width=150)
     with col2:
-        st.title("Управление ремонтами медицинского оборудования")
-        st.markdown("""
-        <div style="color: #666666; margin-top: -15px; margin-bottom: 20px;">
-        С момента своего основания в 2002 году компания SonoScape занимается созданием новых технологий 
-        и разработкой медицинского оборудования.
-        </div>
+        st.title("Управление ремонтами")
+        
         """, unsafe_allow_html=True)
 
     # Фильтры вверху страницы
