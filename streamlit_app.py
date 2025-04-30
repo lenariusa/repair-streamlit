@@ -2,120 +2,81 @@ import streamlit as st
 from supabase import create_client
 from st_aggrid import AgGrid, GridOptionsBuilder
 import pandas as pd
+import base64
 
-# --- Настройка страницы ---
+# --- Настройки страницы ---
 st.set_page_config(
-    layout="wide", 
-    page_title="SonoScape - Управление ремонтами", 
+    layout="wide",
+    page_title="SonoScape - Управление ремонтами",
     page_icon="🔧",
     initial_sidebar_state="expanded"
 )
 
-# --- Кастомные стили в стиле SonoScape ---
+# --- Установка фонового изображения ---
+def set_background(image_path):
+    with open(image_path, "rb") as img_file:
+        encoded = base64.b64encode(img_file.read()).decode()
+    st.markdown(
+        f"""
+        <style>
+        [data-testid="stAppViewContainer"] {{
+            background-image: url("data:image/png;base64,{encoded}");
+            background-size: cover;
+            background-attachment: fixed;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+set_background("A_digital_illustration_showcases_a_futuristic_medi.png")  # Название файла
+
+# --- Кастомные стили SonoScape ---
 st.markdown("""
 <style>
-/* Основные стили */
-[data-testid="stAppViewContainer"] {
-    background-color: #f8f9fa;
-}
-
-/* Контейнеры контента */
-.main, .block-container, [data-testid="stHorizontalBlock"] {
-    background-color: white;
-    border-radius: 8px;
+/* Общий фон контейнеров */
+.block-container {
+    background-color: rgba(255, 255, 255, 0.85);
+    border-radius: 12px;
     padding: 2rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    margin-bottom: 2rem;
+    box-shadow: 0 0 20px rgba(0,0,0,0.2);
+    margin-top: 2rem;
 }
 
-/* Заголовки */
+/* Заголовки и шрифт */
 h1, h2, h3 {
-    color: #005b9f;
-    font-family: 'Arial', sans-serif;
+    color: #0073a7;
+    font-family: 'Segoe UI', sans-serif;
     font-weight: 600;
-    margin-bottom: 1rem;
 }
 
 h1 {
-    font-size: 28px;
-    border-bottom: 2px solid #e0e0e0;
+    font-size: 30px;
+    border-bottom: 2px solid #dcdcdc;
     padding-bottom: 0.5rem;
 }
 
-/* Текст */
-[class*="css"], p, div {
-    font-family: 'Arial', sans-serif;
-    color: #333333;
-    font-size: 15px;
+label, .stTextInput > div > div > input {
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 16px;
 }
 
-/* Поля ввода */
-.stTextInput>div>div>input {
-    border: 1px solid #ced4da;
-    border-radius: 4px;
-    padding: 8px 12px;
+/* Метрика */
+[data-testid="stMetricValue"] {
+    color: #0073a7;
 }
 
-/* Кнопки */
-.stButton>button {
-    background-color: #005b9f;
-    color: white;
-    border-radius: 4px;
-    border: none;
-    padding: 8px 16px;
-    font-weight: 500;
-}
-
-.stButton>button:hover {
-    background-color: #004885;
-    color: white;
-}
-
-/* Таблицы */
-.ag-theme-streamlit {
-    --ag-background-color: white;
-    --ag-foreground-color: #333333;
-    --ag-border-color: #e0e0e0;
-    --ag-header-background-color: #f1f1f1;
-}
-
-/* Карточки статистики */
-.stMetric {
-    background-color: white;
-    border-left: 4px solid #005b9f;
-    padding: 15px;
-    border-radius: 4px;
-}
-
-.stMetricLabel {
-    font-weight: 600;
-    color: #005b9f;
-}
-
-.stMetricValue {
-    font-size: 24px;
-    font-weight: 700;
-}
-
-/* Фильтры */
-.filter-container {
-    background-color: #f8f9fa;
-    padding: 1rem;
+/* Поисковая строка */
+input[type="text"] {
+    background-color: #ffffff;
     border-radius: 8px;
-    margin-bottom: 1.5rem;
-    border: 1px solid #e0e0e0;
+    padding: 8px;
 }
 
-/* Сайдбар */
-[data-testid="stSidebar"] {
-    background-color: white;
-    border-right: 1px solid #e0e0e0;
-}
-
-/* Хедер */
-[data-testid="stHeader"] {
-    background-color: white;
-    border-bottom: 1px solid #e0e0e0;
+/* Логотип */
+.header-logo {
+    height: 60px;
+    margin-bottom: 10px;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -134,34 +95,28 @@ def load_data():
     repairs = supabase.table("repairs").select("*").execute()
     return pd.DataFrame(repairs.data)
 
-# --- Основной код ---
+# --- Основной интерфейс ---
 def main():
-    # Заголовок с логотипом
-    col1, col2 = st.columns([1, 4])
+    # Верхний блок с логотипом и заголовком
+    col1, col2 = st.columns([1, 5])
     with col1:
-        st.image("https://www.sonoscape.com.cn/static/images/logo.png", width=150)
+        st.image("https://www.sonoscape.com.cn/static/images/logo.png", width=130)
     with col2:
-        st.title("Управление ремонтами")
-        st.markdown("""
-        <div style="color: #666666; margin-top: -15px; margin-bottom: 20px;">
-        </div>
-        """, unsafe_allow_html=True)
+        st.title("Управление ремонтами SonoScape")
 
-    # Фильтры вверху страницы
+    # Фильтр поиска
     with st.container():
-        st.markdown('<div class="filter-container">', unsafe_allow_html=True)
-        search_term = st.text_input("🔍 Поиск по серийному номеру:", key="search_input")
-        st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown("### 🔍 Поиск")
+        search_term = st.text_input("Введите серийный номер", key="search_input")
 
     # Загрузка данных
     df = load_data()
     df = df.drop(columns=['id', 'user_id'], errors='ignore')
 
-    # Применение фильтров
     if search_term and 'serial1' in df.columns:
         df = df[df['serial1'].str.contains(search_term, case=False, na=False)]
 
-    # Настройка таблицы
+    # Отображение таблицы
     gb = GridOptionsBuilder.from_dataframe(df)
     gb.configure_default_column(
         wrapText=True,
@@ -170,10 +125,8 @@ def main():
         sortable=True,
         filter=True
     )
-    gb.configure_grid_options(domLayout='normal')
     grid_options = gb.build()
 
-    # Отображение таблицы
     AgGrid(
         df,
         gridOptions=grid_options,
@@ -184,7 +137,7 @@ def main():
     )
 
     # Статистика
-    st.markdown("### Статистика ремонтов")
+    st.markdown("### 📊 Статистика")
     col1, col2, col3 = st.columns(3)
     with col1:
         st.metric("Всего записей", len(df))
