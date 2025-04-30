@@ -2,7 +2,6 @@ import streamlit as st
 from supabase import create_client
 from st_aggrid import AgGrid, GridOptionsBuilder
 import pandas as pd
-import base64
 
 # --- Настройка страницы ---
 st.set_page_config(
@@ -28,7 +27,7 @@ def set_background(image_url):
         unsafe_allow_html=True
     )
 
-# Футуристичный фон (можно заменить на собственное изображение SonoScape)
+# Футуристичный фон
 set_background("https://images.unsplash.com/photo-1620712943543-bcc4688e7485?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1920&q=80")
 
 st.markdown("""
@@ -92,6 +91,15 @@ h1, h2, h3, h4, h5, h6 {
     border-left: 5px solid #00a0ff !important;
 }
 
+/* Фильтры вверху */
+.filter-container {
+    background-color: rgba(0, 40, 80, 0.5) !important;
+    padding: 1rem;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(0, 150, 255, 0.2);
+}
+
 /* Сайдбар */
 [data-testid="stSidebar"] {
     background-color: rgba(0, 20, 40, 0.9) !important;
@@ -101,6 +109,14 @@ h1, h2, h3, h4, h5, h6 {
 /* Хедер */
 [data-testid="stHeader"] {
     background-color: rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Карточки статистики */
+.stMetric {
+    background-color: rgba(0, 60, 120, 0.4) !important;
+    border-radius: 10px;
+    padding: 10px;
+    border-left: 4px solid #00a0ff !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -128,17 +144,11 @@ def main():
     with col2:
         st.title("Управление ремонтами оборудования")
 
-    # Поиск и фильтры в сайдбаре
-    with st.sidebar:
-        st.header("🔍 Фильтры")
-        search_term = st.text_input("Поиск по серийному номеру:")
-        status_filter = st.selectbox(
-            "Статус ремонта",
-            ["Все", "В работе", "Завершен", "Ожидает запчастей"]
-        )
-        st.markdown("---")
-        st.markdown("**SonoScape Future**")
-        st.markdown("v2.0.1")
+    # Фильтры вверху страницы
+    with st.container():
+        st.markdown('<div class="filter-container">', unsafe_allow_html=True)
+        search_term = st.text_input("🔍 Поиск по серийному номеру:", key="search_input")
+        st.markdown('</div>', unsafe_allow_html=True)
 
     # Загрузка данных
     df = load_data()
@@ -147,9 +157,6 @@ def main():
     # Применение фильтров
     if search_term and 'serial1' in df.columns:
         df = df[df['serial1'].str.contains(search_term, case=False, na=False)]
-    
-    if status_filter != "Все" and 'status' in df.columns:
-        df = df[df['status'] == status_filter]
 
     # Настройка таблицы
     gb = GridOptionsBuilder.from_dataframe(df)
@@ -182,9 +189,11 @@ def main():
     with col1:
         st.metric("Всего записей", len(df))
     with col2:
-        st.metric("В работе", len(df[df['status'] == "В работе"]) if 'status' in df.columns else "N/A")
+        in_progress = len(df[df['status'] == "В работе"]) if 'status' in df.columns else 0
+        st.metric("В работе", in_progress)
     with col3:
-        st.metric("Завершено", len(df[df['status'] == "Завершен"]) if 'status' in df.columns else "N/A")
+        ready = len(df[df['status'] == "Готов"]) if 'status' in df.columns else 0
+        st.metric("Готово", ready)
 
 if __name__ == "__main__":
     main()
