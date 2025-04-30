@@ -41,13 +41,16 @@ if not df_repairs.empty and not df_users.empty:
     # Объединяем таблицы по user_id и id
     df_merged = df_repairs.merge(df_users, left_on="user_id", right_on="id", how="left")
     
-    # Убираем лишние столбцы, обязательно указываем правильные столбцы
-    df_merged.drop(columns=["user_id", "id_x", "id_y"], inplace=True, errors='ignore')
+    # Убираем лишние столбцы (id и user_id)
+    columns_to_drop = ["id_x", "id_y", "user_id"]
+    df_merged.drop(columns=[col for col in columns_to_drop if col in df_merged.columns], inplace=True)
     
     # Переименовываем столбец full_name в ФИО
     df_merged.rename(columns={"full_name": "ФИО"}, inplace=True)
 else:
-    df_merged = df_repairs  # fallback, если нет данных
+    df_merged = df_repairs.copy()  # fallback, если нет данных
+    # Удаляем столбцы id и user_id, если они есть
+    df_merged.drop(columns=["id", "user_id"], inplace=True, errors='ignore')
 
 # Заголовок
 st.title("📋 Таблица ремонтов")
